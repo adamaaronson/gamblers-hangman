@@ -3,9 +3,13 @@ import Word from "./Word";
 import LetterTiles from "./LetterTiles";
 import { LETTER_SCORES } from "../data/scores";
 import enable1 from "../data/enable1.json";
+import wiktionary from "../data/wiktionary100000.json";
+
+const commonWords = new Set(wiktionary);
+const wordlist = enable1.filter((word) => commonWords.has(word));
 
 function chooseWord(length: number) {
-  const options = enable1.filter((word) => word.length === length);
+  const options = wordlist.filter((word) => word.length === length);
   return options[Math.floor(Math.random() * options.length)].toUpperCase();
 }
 
