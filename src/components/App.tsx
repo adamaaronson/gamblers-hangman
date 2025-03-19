@@ -15,7 +15,7 @@ function getMaxScore(word: string) {
 
 export default function App() {
   const [score, setScore] = useState(0);
-  const [word, setWord] = useState(() => chooseWord(10));
+  const [word] = useState(() => chooseWord(10));
   const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [solved, setSolved] = useState(false);
