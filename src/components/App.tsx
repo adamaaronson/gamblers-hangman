@@ -51,10 +51,9 @@ export default function App() {
     <div className="flex flex-col items-center p-8">
       <h1 className="text-3xl font-bold text-center">Gambler's Hangman</h1>
       <p>by Adam Aaronson</p>
-      <div className="max-w-[800px] my-4 text-center flex flex-col gap-2">
+      <div className="max-w-[500px] my-4 text-center flex flex-col gap-2">
         <p>
           For each letter you guess correctly, you gain that letter's score
-          <br />
           multiplied by its number of appearances.
         </p>
         <p>
