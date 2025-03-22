@@ -65,8 +65,8 @@ export default function App() {
           score.
         </p>
         <p>
-          Letter scores are capped at the number of blanks remaining, so the
-          risk and reward decreases as the game goes on.
+          Each letter's score is capped at the number of blanks remaining, so
+          the risk and reward decreases as the game goes on.
         </p>
         <p>Try to guess the word with as high a score as possible!</p>
       </div>
