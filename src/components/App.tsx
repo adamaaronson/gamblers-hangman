@@ -1,20 +1,54 @@
 import { useState } from "react";
 import Word from "./Word";
 import LetterTiles from "./LetterTiles";
-import { getLetterScore, Letter, toLetters } from "../data/letters";
+import {
+  getFrequency,
+  getLetterScore,
+  Letter,
+  toLetters,
+} from "../data/letters";
 import enable1 from "../data/enable1.json";
 import wiktionary from "../data/wiktionary100000.json";
 
 const commonWords = new Set(wiktionary);
 const wordlist = enable1.filter((word) => commonWords.has(word));
-const word = chooseWord(10);
 
 function chooseWord(length: number) {
   const options = wordlist.filter((word) => word.length === length);
   return options[Math.floor(Math.random() * options.length)].toUpperCase();
 }
 
+function getWordScore(letter: Letter, word: string, numBlanks: number) {
+  return getLetterScore(letter, numBlanks) * getFrequency(word, letter);
+}
+
+function getMaxScore(word: string) {
+  const wordLetters = new Set(toLetters(word));
+  let score = 0;
+  let numBlanks = word.length;
+  const guesses = [];
+
+  while (wordLetters.size > 0) {
+    // at each step, guess the letter with the highest letter score (accounting for numBlanks)
+    // to break ties, guess the letter with the highest frequency in the word
+    const sortedLetters = [...wordLetters].toSorted(
+      (a, b) =>
+        getLetterScore(b, numBlanks) - getLetterScore(a, numBlanks) ||
+        getFrequency(word, b) - getFrequency(word, a)
+    );
+
+    const guess = sortedLetters[0];
+    wordLetters.delete(guess);
+    score += getWordScore(guess, word, numBlanks);
+    guesses.push([guess, getLetterScore(guess, numBlanks)]);
+    numBlanks -= getFrequency(word, guess);
+  }
+
+  return score;
+}
+
 export default function App() {
+  const [word] = useState(() => chooseWord(10));
   const [score, setScore] = useState(0);
   const [guessedLetters, setGuessedLetters] = useState<Map<Letter, number>>(
     new Map()
@@ -22,10 +56,11 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [solved, setSolved] = useState(false);
 
+  getMaxScore(word);
+
   const numBlanks =
     word.length -
-    toLetters(word).filter((letter) => guessedLetters.has(letter as Letter))
-      .length;
+    toLetters(word).filter((letter) => guessedLetters.has(letter)).length;
 
   const guessLetter = (letter: Letter) => {
     const letterScore = getLetterScore(letter, numBlanks);
@@ -33,12 +68,8 @@ export default function App() {
     setGuessedLetters(newGuessedLetters);
 
     if (word.includes(letter)) {
-      const frequency = toLetters(word).filter(
-        (wordLetter) => wordLetter === letter
-      ).length;
-      setScore(
-        (score) => score + getLetterScore(letter, numBlanks) * frequency
-      );
+      const frequency = getFrequency(word, letter);
+      setScore((score) => score + getWordScore(letter, word, numBlanks));
       setMessage(
         `There${frequency === 1 ? "'s" : " are"} ${frequency} ${letter}${
           frequency === 1 ? "" : "'s"
@@ -65,8 +96,8 @@ export default function App() {
           score.
         </p>
         <p>
-          Each letter's score is capped at the number of blanks remaining, so
-          the risk and reward decreases as the game goes on.
+          But as the game goes on, the score of each letter is adjusted so that
+          it doesn't exceed the number of blanks remaining.
         </p>
         <p>Try to guess the word with as high a score as possible!</p>
       </div>
@@ -86,6 +117,10 @@ export default function App() {
       {solved ? (
         <div className="text-center mt-4">
           <p className="text-3xl mb-2">You did it!</p>
+          <p>
+            You got {score} out of the maximum possible {getMaxScore(word)}{" "}
+            points.
+          </p>
           <p>Refresh for a new word.</p>
         </div>
       ) : (

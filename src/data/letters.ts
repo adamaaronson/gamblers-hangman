@@ -36,3 +36,7 @@ export function getLetterScore(letter: Letter, numBlanks: number) {
 export function toLetters(word: string) {
   return word.split("") as Letter[];
 }
+
+export function getFrequency(word: string, letter: Letter) {
+  return toLetters(word).filter((wordLetter) => wordLetter === letter).length;
+}
