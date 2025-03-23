@@ -6,7 +6,6 @@ import {
   getFrequency,
   getLetterScore,
   Letter,
-  LETTER_SCORES,
   toLetters,
 } from "../data/letters";
 import enable1 from "../data/enable1.json";
