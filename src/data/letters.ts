@@ -29,6 +29,10 @@ export const LETTER_SCORES = {
 
 export type Letter = keyof typeof LETTER_SCORES;
 
+export function allLetters() {
+  return Object.keys(LETTER_SCORES) as Letter[];
+}
+
 export function getLetterScore(letter: Letter, numBlanks: number) {
   return Math.min(LETTER_SCORES[letter], numBlanks);
 }

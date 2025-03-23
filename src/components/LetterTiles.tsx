@@ -4,6 +4,7 @@ const letters = Object.keys(LETTER_SCORES) as Letter[];
 
 interface LetterTilesProps {
   guessedLetters: Map<Letter, number>;
+  highlightedLetters: Set<Letter>;
   numBlanks: number;
   onLetterClick: (letter: Letter) => void;
   word: string;
@@ -11,7 +12,14 @@ interface LetterTilesProps {
 }
 
 export default function LetterTiles(props: LetterTilesProps) {
-  const { guessedLetters, numBlanks, onLetterClick, word, solved } = props;
+  const {
+    guessedLetters,
+    highlightedLetters,
+    numBlanks,
+    onLetterClick,
+    word,
+    solved,
+  } = props;
   return (
     <div className="font-mono flex flex-wrap gap-2 max-w-[400px] justify-center">
       {letters.map((letter, index) => (
@@ -24,7 +32,7 @@ export default function LetterTiles(props: LetterTilesProps) {
                     ? "border-green-300 text-green-300"
                     : "border-red-300 text-red-300"
                 }`
-              : "cursor-pointer"
+              : `cursor-pointer `
           }`}
           onClick={
             guessedLetters.has(letter) || solved
@@ -32,7 +40,11 @@ export default function LetterTiles(props: LetterTilesProps) {
               : () => onLetterClick(letter)
           }
         >
-          <span className="absolute right-0 bottom-0 leading-3 pr-0.5 text-xs tracking-tighter">
+          <span
+            className={`absolute right-0 bottom-0 leading-3 pr-0.5 text-xs tracking-tighter ${
+              highlightedLetters.has(letter) ? "text-red-300" : ""
+            }`}
+          >
             {guessedLetters.get(letter) ?? getLetterScore(letter, numBlanks)}
           </span>
           <span className="text-2xl">{letter}</span>

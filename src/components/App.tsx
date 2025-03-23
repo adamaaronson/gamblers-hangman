@@ -2,9 +2,11 @@ import { useState } from "react";
 import Word from "./Word";
 import LetterTiles from "./LetterTiles";
 import {
+  allLetters,
   getFrequency,
   getLetterScore,
   Letter,
+  LETTER_SCORES,
   toLetters,
 } from "../data/letters";
 import enable1 from "../data/enable1.json";
@@ -53,6 +55,9 @@ export default function App() {
   const [guessedLetters, setGuessedLetters] = useState<Map<Letter, number>>(
     new Map()
   );
+  const [highlightedLetters, setHighlightedLetters] = useState<Set<Letter>>(
+    new Set()
+  );
   const [message, setMessage] = useState("");
   const [solved, setSolved] = useState(false);
 
@@ -65,7 +70,6 @@ export default function App() {
   const guessLetter = (letter: Letter) => {
     const letterScore = getLetterScore(letter, numBlanks);
     const newGuessedLetters = guessedLetters.set(letter, letterScore);
-    setGuessedLetters(newGuessedLetters);
 
     if (word.includes(letter)) {
       const frequency = getFrequency(word, letter);
@@ -75,10 +79,26 @@ export default function App() {
           frequency === 1 ? "" : "'s"
         }!`
       );
+
+      setHighlightedLetters(
+        new Set(
+          allLetters().filter(
+            (highlightedLetter) =>
+              getLetterScore(highlightedLetter, numBlanks) >
+                numBlanks - getFrequency(word, letter) &&
+              !newGuessedLetters.has(highlightedLetter)
+          )
+        )
+      );
+      setTimeout(() => {
+        setHighlightedLetters(new Set());
+      }, 750);
     } else {
       setScore((score) => score - getLetterScore(letter, numBlanks));
       setMessage(`There's no ${letter}!`);
     }
+
+    setGuessedLetters(newGuessedLetters);
 
     if (toLetters(word).every((letter) => newGuessedLetters.has(letter))) {
       setSolved(true);
@@ -108,6 +128,7 @@ export default function App() {
 
       <LetterTiles
         guessedLetters={guessedLetters}
+        highlightedLetters={highlightedLetters}
         numBlanks={numBlanks}
         onLetterClick={(letter: Letter) => guessLetter(letter)}
         word={word}
