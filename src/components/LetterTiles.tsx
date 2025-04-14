@@ -9,6 +9,7 @@ interface LetterTilesProps {
   onLetterClick: (letter: Letter) => void;
   word: string;
   solved: boolean;
+  isDoublingDown: boolean;
 }
 
 export default function LetterTiles(props: LetterTilesProps) {
@@ -19,6 +20,7 @@ export default function LetterTiles(props: LetterTilesProps) {
     onLetterClick,
     word,
     solved,
+    isDoublingDown,
   } = props;
   return (
     <div className="font-mono flex flex-wrap gap-2 max-w-[400px] justify-center">
@@ -42,10 +44,15 @@ export default function LetterTiles(props: LetterTilesProps) {
         >
           <span
             className={`absolute right-0 bottom-0 leading-3 pr-0.5 text-xs tracking-tighter ${
-              highlightedLetters.has(letter) ? "text-red-300" : ""
+              highlightedLetters.has(letter)
+                ? "text-red-300"
+                : isDoublingDown && !guessedLetters.has(letter)
+                ? "text-green-500"
+                : ""
             }`}
           >
-            {guessedLetters.get(letter) ?? getLetterScore(letter, numBlanks)}
+            {guessedLetters.get(letter) ??
+              getLetterScore(letter, numBlanks, isDoublingDown)}
           </span>
           <span className="text-2xl">{letter}</span>
         </div>

@@ -19,8 +19,16 @@ function chooseWord(length: number) {
   return options[Math.floor(Math.random() * options.length)].toUpperCase();
 }
 
-function getWordScore(letter: Letter, word: string, numBlanks: number) {
-  return getLetterScore(letter, numBlanks) * getFrequency(word, letter);
+function getWordScore(
+  letter: Letter,
+  word: string,
+  numBlanks: number,
+  isDoublingDown: boolean
+) {
+  return (
+    getLetterScore(letter, numBlanks, isDoublingDown) *
+    getFrequency(word, letter)
+  );
 }
 
 function getMaxScore(word: string) {
@@ -34,14 +42,15 @@ function getMaxScore(word: string) {
     // to break ties, guess the letter with the highest frequency in the word
     const sortedLetters = [...wordLetters].toSorted(
       (a, b) =>
-        getLetterScore(b, numBlanks) - getLetterScore(a, numBlanks) ||
+        getLetterScore(b, numBlanks, false) -
+          getLetterScore(a, numBlanks, false) ||
         getFrequency(word, b) - getFrequency(word, a)
     );
 
     const guess = sortedLetters[0];
     wordLetters.delete(guess);
-    score += getWordScore(guess, word, numBlanks);
-    guesses.push([guess, getLetterScore(guess, numBlanks)]);
+    score += getWordScore(guess, word, numBlanks, false);
+    guesses.push([guess, getLetterScore(guess, numBlanks, false)]);
     numBlanks -= getFrequency(word, guess);
   }
 
@@ -57,6 +66,8 @@ export default function App() {
   const [highlightedLetters, setHighlightedLetters] = useState<Set<Letter>>(
     new Set()
   );
+  const [doubledDown, setDoubledDown] = useState(false);
+  const [isDoublingDown, setIsDoublingDown] = useState(false);
   const [message, setMessage] = useState("");
   const [solved, setSolved] = useState(false);
 
@@ -67,12 +78,14 @@ export default function App() {
     toLetters(word).filter((letter) => guessedLetters.has(letter)).length;
 
   const guessLetter = (letter: Letter) => {
-    const letterScore = getLetterScore(letter, numBlanks);
+    const letterScore = getLetterScore(letter, numBlanks, isDoublingDown);
     const newGuessedLetters = guessedLetters.set(letter, letterScore);
 
     if (word.includes(letter)) {
       const frequency = getFrequency(word, letter);
-      setScore((score) => score + getWordScore(letter, word, numBlanks));
+      setScore(
+        (score) => score + getWordScore(letter, word, numBlanks, isDoublingDown)
+      );
       setMessage(
         `There${frequency === 1 ? "'s" : " are"} ${frequency} ${letter}${
           frequency === 1 ? "" : "'s"
@@ -83,7 +96,7 @@ export default function App() {
         new Set(
           allLetters().filter(
             (highlightedLetter) =>
-              getLetterScore(highlightedLetter, numBlanks) >
+              getLetterScore(highlightedLetter, numBlanks, false) >
                 numBlanks - getFrequency(word, letter) &&
               !newGuessedLetters.has(highlightedLetter)
           )
@@ -93,7 +106,9 @@ export default function App() {
         setHighlightedLetters(new Set());
       }, 750);
     } else {
-      setScore((score) => score - getLetterScore(letter, numBlanks));
+      setScore(
+        (score) => score - getLetterScore(letter, numBlanks, isDoublingDown)
+      );
       setMessage(`There's no ${letter}!`);
     }
 
@@ -101,6 +116,19 @@ export default function App() {
 
     if (toLetters(word).every((letter) => newGuessedLetters.has(letter))) {
       setSolved(true);
+    }
+
+    if (isDoublingDown) {
+      setDoubledDown(true);
+      setIsDoublingDown(false);
+    }
+  };
+
+  const doubleDown = () => {
+    if (!isDoublingDown) {
+      setIsDoublingDown(true);
+    } else {
+      setIsDoublingDown(false);
     }
   };
 
@@ -132,7 +160,17 @@ export default function App() {
         onLetterClick={(letter: Letter) => guessLetter(letter)}
         word={word}
         solved={solved}
+        isDoublingDown={isDoublingDown}
       />
+      <button
+        className={`border-2 mt-4 px-4 py-2 ${
+          doubledDown ? "opacity-30" : "cursor-pointer"
+        } ${isDoublingDown ? "bg-green-200" : ""}`}
+        disabled={doubledDown}
+        onClick={doubleDown}
+      >
+        Double down? ({doubledDown ? 1 : 0}/1)
+      </button>
 
       {solved ? (
         <div className="text-center mt-4">

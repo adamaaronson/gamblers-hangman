@@ -33,8 +33,12 @@ export function allLetters() {
   return Object.keys(LETTER_SCORES) as Letter[];
 }
 
-export function getLetterScore(letter: Letter, numBlanks: number) {
-  return Math.min(LETTER_SCORES[letter], numBlanks);
+export function getLetterScore(
+  letter: Letter,
+  numBlanks: number,
+  isDoublingDown: boolean
+) {
+  return Math.min(LETTER_SCORES[letter], numBlanks) * (isDoublingDown ? 2 : 1);
 }
 
 export function toLetters(word: string) {
